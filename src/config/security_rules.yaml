@@ -1,0 +1,33 @@
+exec:
+  allowed_processes:
+  - bash
+  - sh
+  - python*
+  allowed_users:
+  - root
+  - admin
+  risk_level: high
+  syscall: exec*
+open:
+  allowed_processes:
+  - '*'
+  allowed_users:
+  - '*'
+  parameter_rules:
+    flags:
+    - O_RDONLY
+    path:
+    - ^/home/
+    - ^/tmp/
+  risk_level: medium
+  syscall: open
+write:
+  allowed_processes:
+  - '*'
+  allowed_users:
+  - '*'
+  parameter_rules:
+    count:
+      max: 1048576
+  risk_level: medium
+  syscall: write
