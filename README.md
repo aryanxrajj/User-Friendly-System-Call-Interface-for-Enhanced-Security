@@ -106,7 +106,7 @@ This project aims to develop a secure and user-friendly interface for system cal
 ### Installation
 ```bash
 # Clone the repository
-git clone [repository-url]
+git clone https://github.com/aryanxrajj/User-Friendly-System-Call-Interface-for-Enhanced-Security.git
 cd system-call-interface
 
 # Create virtual environment
@@ -131,4 +131,3 @@ system-call-interface/
 ├── docs/              # Documentation
 ├── config/            # Configuration files
 └── requirements.txt   # Project dependencies
-```
