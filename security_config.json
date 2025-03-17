@@ -1,0 +1,13 @@
+{
+    "whitelist": [],
+    "blacklist": [
+        "ptrace", "mount", "umount", "init_module", "delete_module",
+        "reboot", "kexec_load", "create_module", "pivot_root"
+    ],
+    "rate_limits": {
+        "file_ops": 100,
+        "network": 50,
+        "process": 10,
+        "general": 200
+    }
+}

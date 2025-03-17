@@ -54,6 +54,18 @@ class SystemCallInterface(QMainWindow):
         self.monitor = SyscallMonitor()
         self.validator = SecurityValidator()
         self.monitored_processes = {}
+        
+        # Check permissions
+        if not self.monitor.check_permissions():
+            QMessageBox.critical(
+                self,
+                "Permission Error",
+                "This application requires root privileges to monitor system calls.\n"
+                "Please run the application with sudo."
+            )
+            self.close()
+            return
+            
         self.setup_ui()
         
         # Setup update timer
@@ -181,10 +193,31 @@ class SystemCallInterface(QMainWindow):
             QMessageBox.warning(self, "Warning", "Please select processes to monitor first.")
             return
             
-        for pid in self.monitored_processes:
-            self.monitor.attach_process(pid)
+        success = True
+        failed_pids = []
         
-        self.monitor.start_monitoring()
+        for pid in self.monitored_processes:
+            if not self.monitor.attach_process(pid):
+                success = False
+                failed_pids.append(str(pid))
+        
+        if not success:
+            QMessageBox.warning(
+                self,
+                "Attachment Error",
+                f"Failed to attach to some processes (PIDs: {', '.join(failed_pids)}).\n"
+                "This might be due to insufficient permissions or process termination."
+            )
+            return
+        
+        if not self.monitor.start_monitoring():
+            QMessageBox.critical(
+                self,
+                "Permission Error",
+                "Failed to start monitoring. Root privileges are required."
+            )
+            return
+        
         self.start_button.setEnabled(False)
         self.select_button.setEnabled(False)
         self.stop_button.setEnabled(True)
@@ -199,6 +232,6 @@ class SystemCallInterface(QMainWindow):
         self.status_bar.showMessage("Monitoring stopped")
     
     def closeEvent(self, event):
-        """Handle window close event"""
+        """Handle application close event"""
         self.monitor.stop_monitoring()
         event.accept()
