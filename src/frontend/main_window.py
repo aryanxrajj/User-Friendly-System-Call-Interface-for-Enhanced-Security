@@ -22,6 +22,31 @@ class LoginDialog(QDialog):
         self.setWindowTitle("Login")
         self.setModal(True)
         
+        self.setFixedSize(300, 200)
+        self.setStyleSheet("""
+            QDialog {
+                background-color: #f0f0f0;
+                border-radius: 10px;
+            }
+            QLabel {
+                font-size: 14px;
+            }
+            QLineEdit {
+                padding: 5px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+            QPushButton {
+                background-color: #4CAF50;
+                color: white;
+                border-radius: 5px;
+                padding: 5px 10px;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+        """)
+        
         layout = QVBoxLayout(self)
         
         form = QFormLayout()
@@ -123,7 +148,7 @@ class SystemCallInterface(QMainWindow):
         # Setup update timer
         self.update_timer = QTimer()
         self.update_timer.timeout.connect(self.update_syscall_table)
-        self.update_timer.start(100)  # Update every 100ms
+        self.update_timer.start(100) # Update every 100ms
         
         # Keep track of monitoring state
         self.is_monitoring = False
@@ -192,15 +217,15 @@ class SystemCallInterface(QMainWindow):
         
         # Set column widths
         header = self.syscall_table.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)  # Time
-        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)  # Process
-        header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)  # System Call
-        header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)  # Category
-        header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)  # Status
-        header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)  # CPU
-        header.setSectionResizeMode(6, QHeaderView.ResizeMode.ResizeToContents)  # Memory
-        header.setSectionResizeMode(7, QHeaderView.ResizeMode.ResizeToContents)  # Risk
-        header.setSectionResizeMode(8, QHeaderView.ResizeMode.Stretch)          # Details
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents) # Time
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents) # Process
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents) # System Call
+        header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents) # Category
+        header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents) # Status
+        header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents) # CPU
+        header.setSectionResizeMode(6, QHeaderView.ResizeMode.ResizeToContents) # Memory
+        header.setSectionResizeMode(7, QHeaderView.ResizeMode.ResizeToContents) # Risk
+        header.setSectionResizeMode(8, QHeaderView.ResizeMode.Stretch) # Details
         
         splitter.addWidget(self.syscall_table)
         
@@ -356,7 +381,7 @@ class SystemCallInterface(QMainWindow):
         # Risk level with color coding
         risk_item = QTableWidgetItem(syscall_info.get('risk_level', 'low'))
         if syscall_info.get('risk_level') == 'high':
-            risk_item.setBackground(QColor(255, 200, 200))  # Light red for high risk
+            risk_item.setBackground(QColor(255, 200, 200)) # Light red for high risk
         self.syscall_table.setItem(row, 7, risk_item)
         
         # Additional details
@@ -495,4 +520,4 @@ class SystemCallInterface(QMainWindow):
             event.accept()
         except Exception as e:
             self.logger.error(f"Error during close: {e}")
-            event.accept()  # Still close even if there's an error
+            event.accept() # Still close even if there's an error
