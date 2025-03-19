@@ -148,7 +148,7 @@ class SystemCallInterface(QMainWindow):
         # Setup update timer
         self.update_timer = QTimer()
         self.update_timer.timeout.connect(self.update_syscall_table)
-        self.update_timer.start(100)  # Update every 100ms
+        self.update_timer.start(100) # Update every 100ms
         
         # Keep track of monitoring state
         self.is_monitoring = False
@@ -217,15 +217,15 @@ class SystemCallInterface(QMainWindow):
         
         # Set column widths
         header = self.syscall_table.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)  # Time
-        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)  # Process
-        header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)  # System Call
-        header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)  # Category
-        header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)  # Status
-        header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)  # CPU
-        header.setSectionResizeMode(6, QHeaderView.ResizeMode.ResizeToContents)  # Memory
-        header.setSectionResizeMode(7, QHeaderView.ResizeMode.ResizeToContents)  # Risk
-        header.setSectionResizeMode(8, QHeaderView.ResizeMode.Stretch)          # Details
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents) # Time
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents) # Process
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents) # System Call
+        header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents) # Category
+        header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents) # Status
+        header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents) # CPU
+        header.setSectionResizeMode(6, QHeaderView.ResizeMode.ResizeToContents) # Memory
+        header.setSectionResizeMode(7, QHeaderView.ResizeMode.ResizeToContents) # Risk
+        header.setSectionResizeMode(8, QHeaderView.ResizeMode.Stretch) # Details
         
         splitter.addWidget(self.syscall_table)
         
@@ -260,7 +260,7 @@ class SystemCallInterface(QMainWindow):
         self.start_button.clicked.connect(self.start_monitoring)
         self.stop_button.clicked.connect(self.stop_monitoring)
         self.clear_button.clicked.connect(self.clear_data)
-        
+        #aryan
         # Set callback for syscall events
         self.monitor.set_callback(self.handle_syscall)
         
@@ -381,7 +381,7 @@ class SystemCallInterface(QMainWindow):
         # Risk level with color coding
         risk_item = QTableWidgetItem(syscall_info.get('risk_level', 'low'))
         if syscall_info.get('risk_level') == 'high':
-            risk_item.setBackground(QColor(255, 200, 200))  # Light red for high risk
+            risk_item.setBackground(QColor(255, 200, 200)) # Light red for high risk
         self.syscall_table.setItem(row, 7, risk_item)
         
         # Additional details
@@ -520,4 +520,4 @@ class SystemCallInterface(QMainWindow):
             event.accept()
         except Exception as e:
             self.logger.error(f"Error during close: {e}")
-            event.accept()  # Still close even if there's an error
+            event.accept() # Still close even if there's an error
