@@ -22,6 +22,31 @@ class LoginDialog(QDialog):
         self.setWindowTitle("Login")
         self.setModal(True)
         
+        self.setFixedSize(300, 200)
+        self.setStyleSheet("""
+            QDialog {
+                background-color: #f0f0f0;
+                border-radius: 10px;
+            }
+            QLabel {
+                font-size: 14px;
+            }
+            QLineEdit {
+                padding: 5px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+            QPushButton {
+                background-color: #4CAF50;
+                color: white;
+                border-radius: 5px;
+                padding: 5px 10px;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+        """)
+        
         layout = QVBoxLayout(self)
         
         form = QFormLayout()
