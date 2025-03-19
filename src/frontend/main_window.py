@@ -260,7 +260,7 @@ class SystemCallInterface(QMainWindow):
         self.start_button.clicked.connect(self.start_monitoring)
         self.stop_button.clicked.connect(self.stop_monitoring)
         self.clear_button.clicked.connect(self.clear_data)
-        
+        #aryan
         # Set callback for syscall events
         self.monitor.set_callback(self.handle_syscall)
         
