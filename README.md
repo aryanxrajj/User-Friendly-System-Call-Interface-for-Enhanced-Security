@@ -2,7 +2,7 @@
 
 ## 1. Project Overview
 This project aims to develop a secure and user-friendly interface for system calls, bridging the gap between user applications and kernel operations. The system will provide:
-- A graphical interface for managing and monitoring system calls
+- A graphical interface for managing and monitoring system calls.
 - Security analysis and validation of system call parameters
 - Real-time monitoring and logging of system call activities
 
@@ -91,7 +91,7 @@ This project aims to develop a secure and user-friendly interface for system cal
 4. Add configuration interface
 
 ### Phase 4: Integration and Testing (Week 7-8)
-1. Integrate all modules
+1. Integrate all modules.
 2. Implement comprehensive testing
 3. Performance optimization
 4. Documentation and deployment guide
