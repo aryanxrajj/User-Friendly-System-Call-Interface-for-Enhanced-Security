@@ -12,6 +12,8 @@ import subprocess
 from collections import defaultdict, deque
 from pathlib import Path
 import random
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
 
 class SyscallMonitor:
     # High-risk system calls that could indicate potential security threats
@@ -36,6 +38,9 @@ class SyscallMonitor:
         self.callback: Optional[Callable] = None
         self.event_queue = Queue()
         self._setup_logging()
+        self.start_time = None
+        self.stop_time = None
+        self.syscall_logs = defaultdict(list)
         
         # Initialize tracking structures
         self.process_states = {}
@@ -86,6 +91,7 @@ class SyscallMonitor:
             return False
         
         self.logger.info(f"Started monitoring process with PID: {pid}")
+        self.start_time = datetime.now()
         
         if not self.running:
             self.running = True
@@ -99,6 +105,7 @@ class SyscallMonitor:
         """Stop monitoring all processes"""
         self.logger.info("Stopped monitoring all processes")
         self.running = False
+        self.stop_time = datetime.now()
         if self.monitor_thread:
             self.monitor_thread.join()
         self.monitored_processes.clear()
@@ -167,6 +174,8 @@ class SyscallMonitor:
                     'risk_level': risk_level,
                     'process_info': proc_info
                 }
+                
+                self.syscall_logs[pid].append(syscall_info)
                 
                 if self.callback:
                     self.callback(syscall_info)
@@ -482,3 +491,126 @@ class SyscallMonitor:
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
         return processes
+
+    def save_logs(self, output_dir: str = "logs"):
+        """Save the collected syscall logs to a PDF file with timestamp"""
+        try:
+            # Create logs directory if it doesn't exist
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
+            
+            # Generate filename with timestamp
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"syscall_logs_{timestamp}.pdf"
+            filepath = Path(output_dir) / filename
+            
+            # Create PDF
+            c = canvas.Canvas(str(filepath), pagesize=letter)
+            width, height = letter
+            
+            # Add title
+            c.setFont("Helvetica-Bold", 16)
+            c.drawString(50, height - 50, "System Call Monitor Logs")
+            
+            # Add timestamp
+            c.setFont("Helvetica", 12)
+            c.drawString(50, height - 70, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            
+            # Add monitoring duration
+            if self.start_time and self.stop_time:
+                duration = self.stop_time - self.start_time
+                c.drawString(50, height - 90, f"Monitoring Duration: {duration}")
+            
+            # Add line separator
+            c.line(50, height - 110, width - 50, height - 110)
+            
+            # Add syscall statistics
+            c.setFont("Helvetica-Bold", 14)
+            c.drawString(50, height - 130, "System Call Statistics")
+            
+            # Calculate statistics
+            total_calls = sum(self.syscall_counts.values())
+            stats_y = height - 160
+            
+            # Add statistics table
+            for category, calls in self.syscall_counts.items():
+                c.setFont("Helvetica", 12)
+                c.drawString(60, stats_y, f"{category}: {calls} calls ({(calls/total_calls*100):.1f}%)")
+                stats_y -= 20
+            
+            # Add line separator
+            c.line(50, stats_y - 20, width - 50, stats_y - 20)
+            
+            # Add syscall logs
+            c.setFont("Helvetica-Bold", 14)
+            c.drawString(50, stats_y - 40, "System Call Logs")
+            
+            # Add logs
+            log_y = stats_y - 70
+            for pid, calls in self.syscall_logs.items():
+                if log_y < 50:  # Start new page if needed
+                    c.showPage()
+                    log_y = height - 50
+                
+                c.setFont("Helvetica-Bold", 12)
+                c.drawString(60, log_y, f"Process ID: {pid}")
+                log_y -= 20
+                
+                for call in calls:
+                    if log_y < 50:  # Start new page if needed
+                        c.showPage()
+                        log_y = height - 50
+                    
+                    c.setFont("Helvetica", 10)
+                    c.drawString(70, log_y, f"- {call['name']}: {call.get('arguments', {}).get('arg', '')}")
+                    log_y -= 15
+            
+            # Save PDF
+            c.save()
+            
+            return str(filepath)
+        except Exception as e:
+            self.logger.error(f"Error saving logs: {str(e)}")
+            return None
+
+    def export_logs(self):
+        """Export logs to PDF and optionally JSON format"""
+        if not self.monitored_processes:
+            self.logger.warning("No monitored processes to export logs.")
+            return
+
+        # Gather log details
+        log_details = []
+        for pid, logs in self.syscall_logs.items():
+            for log in logs:
+                log_details.append(log)
+
+        # Define PDF file name
+        timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        pdf_filename = f'monitoring_logs_{timestamp}.pdf'
+
+        # Create PDF
+        try:
+            c = canvas.Canvas(pdf_filename, pagesize=letter)
+            c.drawString(100, 750, "Monitoring Logs Report")
+            c.drawString(100, 730, f"Monitoring Started: {self.start_time}")
+            c.drawString(100, 710, f"Monitoring Stopped: {self.stop_time}")
+            c.drawString(100, 690, "Log Details:")
+
+            y = 670
+            for detail in log_details:
+                c.drawString(100, y, f"{detail}")
+                y -= 20
+
+            c.save()
+            self.logger.info(f"Logs exported to {pdf_filename}")
+        except Exception as e:
+            self.logger.error(f"Failed to export logs: {e}")
+
+        # Optionally save logs in JSON format
+        json_filename = f'monitoring_logs_{timestamp}.json'
+        try:
+            with open(json_filename, 'w') as json_file:
+                json.dump(log_details, json_file)
+            self.logger.info(f"Logs exported to {json_filename}")
+        except Exception as e:
+            self.logger.error(f"Failed to export logs to JSON: {e}")
