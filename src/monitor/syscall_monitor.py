@@ -82,8 +82,11 @@ class SyscallMonitor:
     def start_monitoring(self, pid: int):
         """Start monitoring a specific process"""
         if not self.attach_process(pid):
+            self.logger.error(f"Failed to attach process with PID: {pid}")
             return False
-            
+        
+        self.logger.info(f"Started monitoring process with PID: {pid}")
+        
         if not self.running:
             self.running = True
             self.monitor_thread = threading.Thread(target=self._monitor_loop)
@@ -92,10 +95,20 @@ class SyscallMonitor:
         
         return True
 
+    def stop_monitoring(self):
+        """Stop monitoring all processes"""
+        self.logger.info("Stopped monitoring all processes")
+        self.running = False
+        if self.monitor_thread:
+            self.monitor_thread.join()
+        self.monitored_processes.clear()
+
     def _monitor_loop(self):
         """Main monitoring loop"""
+        self.logger.debug("Entering monitor loop")
         while self.running:
             try:
+                self.logger.debug("Iterating over monitored processes")
                 for pid in list(self.monitored_processes.keys()):
                     try:
                         proc = psutil.Process(pid)
@@ -112,10 +125,13 @@ class SyscallMonitor:
                             'status': proc.status()
                         }
                         
+                        self.logger.debug(f"Monitoring process: {proc_info}")
+                        
                         # Simulate system calls for testing
                         self._simulate_syscalls(pid, proc_info)
                         
                     except psutil.NoSuchProcess:
+                        self.logger.warning(f"Process with PID {pid} no longer exists")
                         self.monitored_processes.pop(pid, None)
                         continue
                         

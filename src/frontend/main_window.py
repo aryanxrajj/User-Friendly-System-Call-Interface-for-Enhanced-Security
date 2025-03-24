@@ -25,25 +25,26 @@ class LoginDialog(QDialog):
         self.setFixedSize(300, 200)
         self.setStyleSheet("""
             QDialog {
-                background-color: #f0f0f0;
+                background-color: #000000;
+                border: 1px solid #00FF00;
                 border-radius: 10px;
             }
-            QLabel {
-                font-size: 14px;
+            QLabel, QPushButton, QLineEdit {
+                color: #00FF00;
+                font-family: 'Courier New', monospace;
+                font-weight: bold;
             }
             QLineEdit {
-                padding: 5px;
-                border: 1px solid #ccc;
-                border-radius: 5px;
+                background-color: #000000;
+                border: 1px solid #00FF00;
             }
             QPushButton {
-                background-color: #4CAF50;
-                color: white;
-                border-radius: 5px;
-                padding: 5px 10px;
+                background-color: #000000;
+                border: 1px solid #00FF00;
+                padding: 10px 20px;
             }
             QPushButton:hover {
-                background-color: #45a049;
+                background-color: #004400;
             }
         """)
         
@@ -87,6 +88,14 @@ class ProcessSelectionDialog(QDialog):
         
         layout = QVBoxLayout(self)
         
+        # Add search bar for processes
+        self.process_search_bar = QLineEdit()
+        self.process_search_bar.setPlaceholderText("Search processes...")
+        layout.addWidget(self.process_search_bar)
+        
+        # Connect search bar signal to filter function
+        self.process_search_bar.textChanged.connect(self.filter_processes)
+        
         # Process list
         self.process_list = QListWidget()
         for proc in processes:
@@ -104,6 +113,12 @@ class ProcessSelectionDialog(QDialog):
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
         layout.addWidget(button_box)
+    
+    def filter_processes(self, text):
+        """Filter processes based on input text"""
+        for i in range(self.process_list.count()):
+            item = self.process_list.item(i)
+            item.setHidden(text.lower() not in item.text().lower())
     
     def get_selected_processes(self):
         """Get list of selected processes"""
@@ -268,6 +283,40 @@ class SystemCallInterface(QMainWindow):
         self.syscall_counts = defaultdict(int)
         self.risk_counts = defaultdict(lambda: defaultdict(int))
         
+        self.setStyleSheet("""
+            QMainWindow {
+                background-color: #000000;
+            }
+            QLabel, QPushButton, QLineEdit {
+                color: #00FF00;
+                font-family: 'Courier New', monospace;
+                font-weight: bold;
+            }
+            QLineEdit {
+                background-color: #000000;
+                border: 1px solid #00FF00;
+            }
+            QPushButton {
+                background-color: #000000;
+                border: 1px solid #00FF00;
+                padding: 10px 20px;
+            }
+            QPushButton:hover {
+                background-color: #004400;
+            }
+            QTableWidget {
+                background-color: #000000;
+                color: #00FF00;
+                gridline-color: #00FF00;
+                font-family: 'Courier New', monospace;
+            }
+            QHeaderView::section {
+                background-color: #000000;
+                color: #00FF00;
+                border: 1px solid #00FF00;
+            }
+        """)
+    
     def clear_data(self):
         """Clear all displayed data"""
         self.syscall_table.setRowCount(0)
