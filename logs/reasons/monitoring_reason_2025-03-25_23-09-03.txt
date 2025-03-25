@@ -1,0 +1,8 @@
+Monitoring started at: 2025-03-25 23:09:03
+
+Reason: education
+
+Processes being monitored:
+- PID: 87113, Name: Finder, User: aryanraj
+
+--- End of Monitoring Reason ---

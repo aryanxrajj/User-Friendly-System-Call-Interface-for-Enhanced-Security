@@ -3,7 +3,8 @@ from PyQt6.QtWidgets import (
     QPushButton, QTableWidget, QTableWidgetItem, QLabel,
     QHBoxLayout, QStatusBar, QListWidget, QListWidgetItem,
     QSplitter, QDialog, QDialogButtonBox, QMessageBox, QHeaderView,
-    QLineEdit, QFormLayout, QToolBar, QFrame, QProgressBar
+    QLineEdit, QFormLayout, QToolBar, QFrame, QProgressBar,
+    QInputDialog
 )
 from PyQt6.QtCore import Qt, QTimer, QEasingCurve, QPropertyAnimation, QRect
 from PyQt6.QtGui import QFont, QColor, QPainter, QPalette
@@ -294,6 +295,7 @@ class SystemCallInterface(QMainWindow):
         self.logger = logging.getLogger(__name__)
         
         # Initialize security components
+        self.current_user = None  # Initialize current_user attribute
         self.auth_manager = AuthManager()
         self.setup_default_admin()
         
@@ -509,6 +511,13 @@ class SystemCallInterface(QMainWindow):
         self.stop_button.setStyleSheet("border-radius: 10px;")
         toolbar.addWidget(self.stop_button)
         
+        # Add terminate process button with animation
+        self.terminate_button = QPushButton("Terminate Process")
+        self.terminate_button.clicked.connect(self.terminate_process)
+        self.terminate_button.setMinimumWidth(150)
+        self.terminate_button.setStyleSheet("border-radius: 10px;")
+        toolbar.addWidget(self.terminate_button)
+        
         # Add toolbar to main layout
         main_layout.addLayout(toolbar)
         
@@ -617,6 +626,13 @@ class SystemCallInterface(QMainWindow):
     def handle_syscall(self, syscall_info: Dict[str, Any]):
         """Handle system call with enhanced security validation"""
         try:
+            if syscall_info is None:
+                self.logger.error("Received None for syscall_info")
+                return
+            if 'pid' not in syscall_info:
+                self.logger.error("syscall_info does not contain 'pid'")
+                return
+
             # Get process info
             proc = psutil.Process(syscall_info['pid'])
             process_info = {
@@ -646,9 +662,8 @@ class SystemCallInterface(QMainWindow):
                 'validation': validation,
                 'process_info': process_info
             })
-            
         except Exception as e:
-            print(f"Error handling syscall: {e}")
+            self.logger.error(f"Error handling syscall: {e}")
     
     def add_syscall_entry(self, syscall_info: Dict[str, Any]):
         """Add system call entry to table"""
@@ -816,6 +831,16 @@ class SystemCallInterface(QMainWindow):
             self.stop_button.setEnabled(False)
             self.select_button.setEnabled(True)
             self.update_process_table()  
+            
+            # Check if there are any monitored processes left
+            if not self.monitored_processes:
+                QMessageBox.information(
+                    self,
+                    "Monitoring Stopped",
+                    "All monitored processes have terminated."
+                )
+                return
+            
             self.logger.info("Monitoring stopped successfully")
             
         except Exception as e:
@@ -843,6 +868,28 @@ class SystemCallInterface(QMainWindow):
                 "Error",
                 f"Failed to save logs: {str(e)}"
             )
+
+    def terminate_process(self):
+        """Terminate the selected process and log the reason."""
+        selected_items = self.process_table.selectedItems()
+        if not selected_items:
+            QMessageBox.warning(self, "No Process Selected", "Please select a process to terminate.")
+            return
+        
+        try:
+            pid = int(selected_items[0].text())  # Assuming PID is in the first column
+        except ValueError:
+            QMessageBox.warning(self, "Invalid PID", "The selected process does not have a valid PID.")
+            return
+        
+        reason, ok = QInputDialog.getText(self, "Terminate Process", "Enter reason for termination:")
+        if ok and reason:
+            if self.monitor.terminate_process(pid, reason):
+                QMessageBox.information(self, "Process Terminated", f"Process {pid} has been terminated.")
+            else:
+                QMessageBox.critical(self, "Error", "Failed to terminate the process.")
+        else:
+            QMessageBox.warning(self, "No Reason Provided", "Please provide a reason for termination.")
 
     def closeEvent(self, event):
         """Handle application close event"""

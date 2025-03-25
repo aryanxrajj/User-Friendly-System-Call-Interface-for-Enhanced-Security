@@ -493,84 +493,36 @@ class SyscallMonitor:
         return processes
 
     def save_logs(self, output_dir: str = "logs"):
-        """Save the collected syscall logs to a PDF file with timestamp"""
+        """Save the collected syscall logs to a PDF file with timestamp."""
         try:
-            # Create logs directory if it doesn't exist
-            Path(output_dir).mkdir(parents=True, exist_ok=True)
-            
-            # Generate filename with timestamp
+            # Check if output directory exists
+            if not os.path.exists(output_dir):
+                self.logger.info(f"Output directory '{output_dir}' does not exist. Creating it.")
+                os.makedirs(output_dir)
+            else:
+                self.logger.info(f"Output directory '{output_dir}' exists.")
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"syscall_logs_{timestamp}.pdf"
-            filepath = Path(output_dir) / filename
+            log_filename = os.path.join(output_dir, f"syscall_logs_{timestamp}.pdf")
+            self.logger.info(f"Attempting to save logs to {log_filename}")
+            self.logger.info(f"Current syscall logs: {self.syscall_logs}")  # Log the current state of syscall_logs
             
             # Create PDF
-            c = canvas.Canvas(str(filepath), pagesize=letter)
-            width, height = letter
-            
-            # Add title
-            c.setFont("Helvetica-Bold", 16)
-            c.drawString(50, height - 50, "System Call Monitor Logs")
-            
-            # Add timestamp
-            c.setFont("Helvetica", 12)
-            c.drawString(50, height - 70, f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-            
-            # Add monitoring duration
-            if self.start_time and self.stop_time:
-                duration = self.stop_time - self.start_time
-                c.drawString(50, height - 90, f"Monitoring Duration: {duration}")
-            
-            # Add line separator
-            c.line(50, height - 110, width - 50, height - 110)
-            
-            # Add syscall statistics
-            c.setFont("Helvetica-Bold", 14)
-            c.drawString(50, height - 130, "System Call Statistics")
-            
-            # Calculate statistics
-            total_calls = sum(self.syscall_counts.values())
-            stats_y = height - 160
-            
-            # Add statistics table
-            for category, calls in self.syscall_counts.items():
-                c.setFont("Helvetica", 12)
-                c.drawString(60, stats_y, f"{category}: {calls} calls ({(calls/total_calls*100):.1f}%)")
-                stats_y -= 20
-            
-            # Add line separator
-            c.line(50, stats_y - 20, width - 50, stats_y - 20)
-            
-            # Add syscall logs
-            c.setFont("Helvetica-Bold", 14)
-            c.drawString(50, stats_y - 40, "System Call Logs")
-            
-            # Add logs
-            log_y = stats_y - 70
-            for pid, calls in self.syscall_logs.items():
-                if log_y < 50:  # Start new page if needed
-                    c.showPage()
-                    log_y = height - 50
-                
-                c.setFont("Helvetica-Bold", 12)
-                c.drawString(60, log_y, f"Process ID: {pid}")
-                log_y -= 20
-                
-                for call in calls:
-                    if log_y < 50:  # Start new page if needed
-                        c.showPage()
-                        log_y = height - 50
-                    
-                    c.setFont("Helvetica", 10)
-                    c.drawString(70, log_y, f"- {call['name']}: {call.get('arguments', {}).get('arg', '')}")
-                    log_y -= 15
-            
-            # Save PDF
+            c = canvas.Canvas(log_filename, pagesize=letter)
+            c.drawString(100, 750, "Monitoring Logs Report")
+            c.drawString(100, 730, f"Monitoring Started: {self.start_time}")
+            c.drawString(100, 710, f"Monitoring Stopped: {self.stop_time}")
+            c.drawString(100, 690, "Log Details:")
+            y = 670
+            for pid, logs in self.syscall_logs.items():
+                for log in logs:
+                    c.drawString(100, y, f"{log}")
+                    y -= 20
             c.save()
-            
-            return str(filepath)
+            self.logger.info(f"Logs saved to {log_filename}")
         except Exception as e:
-            self.logger.error(f"Error saving logs: {str(e)}")
-            return None
+            self.logger.error(f"Failed to save logs: {e}")
+            return False
+        return True
 
     def export_logs(self):
         """Export logs to PDF and optionally JSON format"""
@@ -595,7 +547,6 @@ class SyscallMonitor:
             c.drawString(100, 730, f"Monitoring Started: {self.start_time}")
             c.drawString(100, 710, f"Monitoring Stopped: {self.stop_time}")
             c.drawString(100, 690, "Log Details:")
-
             y = 670
             for detail in log_details:
                 c.drawString(100, y, f"{detail}")
@@ -614,3 +565,14 @@ class SyscallMonitor:
             self.logger.info(f"Logs exported to {json_filename}")
         except Exception as e:
             self.logger.error(f"Failed to export logs to JSON: {e}")
+
+    def terminate_process(self, pid: int, reason: str):
+        """Terminate the specified process and log the reason."""
+        try:
+            proc = psutil.Process(pid)
+            proc.terminate()  # Terminate the process
+            self.logger.info(f"Terminated process {pid}: {reason}")
+        except Exception as e:
+            self.logger.error(f"Failed to terminate process {pid}: {str(e)}")
+            return False
+        return True
