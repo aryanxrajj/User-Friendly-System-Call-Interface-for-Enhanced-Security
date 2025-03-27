@@ -548,8 +548,8 @@ class SystemCallInterface(QMainWindow):
         syscall_layout.setContentsMargins(10, 10, 10, 10)
         
         self.syscall_table = QTableWidget()
-        self.syscall_table.setColumnCount(4)
-        self.syscall_table.setHorizontalHeaderLabels(["PID", "System Call", "Arguments", "Timestamp"])
+        self.syscall_table.setColumnCount(7)
+        self.syscall_table.setHorizontalHeaderLabels(["Time", "Process (PID)", "System Call", "Category", "CPU %", "Memory %", "Risk Level"])
         self.syscall_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         syscall_layout.addWidget(self.syscall_table)
         splitter.addWidget(syscall_widget)

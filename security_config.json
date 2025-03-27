@@ -1,5 +1,12 @@
 {
-    "whitelist": [],
+    "whitelist": [
+        "open", "read", "write", "close", "unlink", "rename", "mkdir", "rmdir",
+        "socket", "connect", "bind", "listen", "accept", "send", "recv",
+        "fork", "clone", "execve", "exit", "kill",
+        "mmap", "munmap", "mprotect", "brk",
+        "chmod", "chown", "setuid", "setgid",
+        "pipe", "msgget", "semget", "shmget"
+    ],
     "blacklist": [
         "ptrace", "mount", "umount", "init_module", "delete_module",
         "reboot", "kexec_load", "create_module", "pivot_root"

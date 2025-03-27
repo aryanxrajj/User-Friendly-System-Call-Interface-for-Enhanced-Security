@@ -126,7 +126,7 @@ class SyscallMonitor:
                             'name': proc.name(),
                             'username': proc.username(),
                             'cmdline': proc.cmdline(),
-                            'cpu_percent': proc.cpu_percent(),
+                            'cpu_percent': proc.cpu_percent(interval=0.1),  # Add interval for accurate CPU usage
                             'memory_percent': proc.memory_percent(),
                             'num_threads': proc.num_threads(),
                             'status': proc.status()
