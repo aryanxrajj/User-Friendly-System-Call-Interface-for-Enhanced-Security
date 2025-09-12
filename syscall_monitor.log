@@ -1,0 +1,3 @@
+2025-09-10 14:59:04,075 - src.monitor.syscall_monitor - ERROR - [10483] - Application must be run with root privileges
+2025-09-10 14:59:09,342 - frontend.main_window - ERROR - [10483] - Error during close: 'SystemCallInterface' object has no attribute 'is_monitoring'
+2025-09-10 14:59:15,206 - frontend.main_window - ERROR - [10483] - Error during close: 'SystemCallInterface' object has no attribute 'is_monitoring'

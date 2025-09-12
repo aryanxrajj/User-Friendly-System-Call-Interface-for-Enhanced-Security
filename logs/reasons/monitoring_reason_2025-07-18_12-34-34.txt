@@ -1,0 +1,8 @@
+Monitoring started at: 2025-07-18 12:34:34
+
+Reason: learning
+
+Processes being monitored:
+- PID: 79335, Name: ChatGPT, User: aryanraj
+
+--- End of Monitoring Reason ---
